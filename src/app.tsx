@@ -1,47 +1,58 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import {ReactRouletteSlot, RouletteSlotDataItem} from 'react-roulette-slot';
+import Roulette from 'react-roulette';
 
-interface AppInterface{
+interface AppPropsInterface{
 
 }
+interface AppStateInterface{
+	items: string[],
+	colors: string[]
+}
 
-class App extends React.Component<AppInterface,{}>{
-	colors: string[] = ["Black", "Gray", "Magenta", "Olive", "Silver", "Yellow"
-						, "Blue", "Green", "Maroon", "Purple", "Teal"
-						, "Cyan", "Lime", "Navy", "Red", "White"]
-	action = (cb) => {
-		cb({ data: 1000 });
-	};
-	createData(labels: string[]): RouletteSlotDataItem[]{
-		let data = [];
-		let cnt = 0;
-		let ls = JSON.parse(JSON.stringify(labels))
-		for(let x in labels){
-			data.push({id: cnt, img: "/dist/img/" + this.colors[cnt] + ".jpg",
-					   label: ls[0]});
-			ls.splice(0, 1);
-			cnt++;
-		}
-		console.log(data)
-		return data;
-	}
+class App extends React.Component<AppPropsInterface, AppStateInterface>{
 	constructor(props){
 		super(props);
+		this.state = {
+			items: [],
+			colors: []
+		}
+		this.insert_todo = this.insert_todo.bind(this);
+		this.delete_todo = this.delete_todo.bind(this);
+	}
+	randomColor(){
+		return "#" + Math.floor(Math.random() * 16777215).toString(16);
+	}
+	insert_todo(){
+		let todo_value:string = (document.querySelector('#todo') as HTMLInputElement).value
+		if(this.state.items.length > 0){
+			this.setState({
+				items: [...this.state.items,todo_value],
+				colors: [...this.state.colors, this.randomColor()]
+			});
+		}else{
+			this.setState({
+				items: [todo_value],
+				colors: [this.randomColor()]
+			});
+		}
+		console.log(this.state);
+	}
+	delete_todo(event: React.MouseEvent<HTMLLIElement, MouseEvent>){
+		console.log(event);
 	}
 	render(){
+		console.log(this.state);
+		let li = this.state.items.map((x, i) => <li key={i} onClick={this.delete_todo}>{x}</li>)
 		return (
 				<div>
-				<ReactRouletteSlot
-			data={this.createData(["test", "dayo", "koreha",
-								   "test2", "dayo2", "koreha2",
-								   "test3", "dayo3", "koreha3",
-								   "test4", "dayo4", "koreha4"
-								  ])}
-			action={this.action}
-			width={300}
-			height={300}
-				/>
+				todo:<input type="text" id="todo" />
+			<ul>
+				{li}
+			</ul>
+				<button onClick={this.insert_todo}>insert</button>
+				<Roulette items={this.state.items} colors={this.state.colors}
+			onChange={(selected) => alert(selected)} />
 			</div>
 		)
 	}
